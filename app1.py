@@ -5,159 +5,173 @@ import math
 
 # ---------------- PAGE CONFIG ---------------- #
 st.set_page_config(
-    page_title="Islamic Prayer Companion",
+    page_title="Noor Prayer",
     page_icon="🕌",
-    layout="centered"
+    layout="wide"
 )
 
-# ---------------- THEME TOGGLE ---------------- #
-mode = st.sidebar.radio("Theme Mode", ["🌙 Dark", "☀ Light"])
+# ---------------- PROFESSIONAL COLOR SYSTEM ---------------- #
+PRIMARY = "#0F3D3E"
+SECONDARY = "#14B8A6"
+ACCENT = "#FACC15"
+LIGHT_BG = "#F8FAFC"
+CARD_BG = "#FFFFFF"
+TEXT_DARK = "#1E293B"
 
-if mode == "🌙 Dark":
-    background = "linear-gradient(135deg, #0f2027, #203a43, #2c5364)"
-    text_color = "#ffffff"
-    card_bg = "rgba(255,255,255,0.1)"
-    accent = "#ffd700"
-else:
-    background = "linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4)"
-    text_color = "#222222"
-    card_bg = "rgba(255,255,255,0.7)"
-    accent = "#1e88e5"
-
-# ---------------- CUSTOM STYLE ---------------- #
+# ---------------- GLOBAL STYLE ---------------- #
 st.markdown(f"""
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
 .stApp {{
-    background: {background};
-    background-attachment: fixed;
-    color: {text_color};
-    font-family: 'Poppins', sans-serif;
+    background-color: {LIGHT_BG};
+    font-family: 'Inter', sans-serif;
 }}
 
-h1 {{
-    font-family: 'Playfair Display', serif;
-    font-size: 42px;
-    text-align: center;
+.navbar {{
+    background-color: {PRIMARY};
+    padding: 18px 40px;
+    color: white;
+    font-size: 22px;
+    font-weight: 600;
 }}
 
-h2, h3 {{
+.hero {{
+    background: linear-gradient(135deg, {PRIMARY}, {SECONDARY});
+    padding: 60px;
+    border-radius: 20px;
+    color: white;
     text-align: center;
+    margin-bottom: 40px;
 }}
 
 .card {{
-    background: {card_bg};
-    backdrop-filter: blur(12px);
+    background-color: {CARD_BG};
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+}}
+
+.prayer-card {{
+    background: linear-gradient(135deg, {PRIMARY}, {SECONDARY});
+    color: white;
     padding: 25px;
     border-radius: 20px;
-    margin: 15px 0;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     text-align: center;
-    transition: 0.3s;
 }}
 
-.card:hover {{
-    transform: scale(1.02);
+.big-number {{
+    font-size: 28px;
+    font-weight: 700;
 }}
 
-div.stButton > button {{
-    background: {accent};
-    color: white;
-    border-radius: 25px;
+button[kind="primary"] {{
+    background-color: {ACCENT} !important;
+    color: black !important;
+    border-radius: 12px !important;
     height: 3em;
-    width: 100%;
-    border: none;
-    font-weight: 600;
-    font-size: 16px;
 }}
 
 .footer {{
     text-align: center;
+    padding: 40px;
+    color: {TEXT_DARK};
     font-size: 14px;
-    margin-top: 40px;
 }}
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- TITLE ---------------- #
-st.title("🕌 Islamic Prayer Companion")
-st.markdown("### A Beautiful Spiritual Experience")
+# ---------------- NAVBAR ---------------- #
+st.markdown("<div class='navbar'>🕌 Noor Prayer — Islamic Companion</div>", unsafe_allow_html=True)
 
-# ---------------- LOCATION INPUT ---------------- #
-if st.button("📍 Detect My Location"):
-    loc = requests.get("https://ipapi.co/json/").json()
-    st.session_state.city = loc.get("city", "Mecca")
-    st.session_state.country = loc.get("country_name", "Saudi Arabia")
+# ---------------- HERO SECTION ---------------- #
+st.markdown("""
+<div class='hero'>
+    <h1>Stay Connected to Your Prayers</h1>
+    <p>Accurate Prayer Times • Qibla Direction • Daily Quran Verse</p>
+</div>
+""", unsafe_allow_html=True)
 
-city = st.text_input("City", st.session_state.get("city", "Mecca"))
-country = st.text_input("Country", st.session_state.get("country", "Saudi Arabia"))
+# ---------------- MAIN GRID ---------------- #
+col1, col2 = st.columns([2, 1])
 
-# ---------------- GET PRAYER TIMES ---------------- #
-def get_prayer_times(city, country):
-    today = datetime.now().strftime("%d-%m-%Y")
-    url = f"https://api.aladhan.com/v1/timingsByCity/{today}"
-    params = {"city": city, "country": country, "method": 2}
-    response = requests.get(url, params=params)
-    return response.json()
+# ---------------- LEFT SIDE (PRAYER TIMES) ---------------- #
+with col1:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("📍 Your Location")
 
-if st.button("🕋 Get Prayer Times"):
-    data = get_prayer_times(city, country)
+    if st.button("Detect Location"):
+        loc = requests.get("https://ipapi.co/json/").json()
+        st.session_state.city = loc.get("city", "Mecca")
+        st.session_state.country = loc.get("country_name", "Saudi Arabia")
 
-    if data["code"] == 200:
-        timings = data["data"]["timings"]
-        prayers = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]
+    city = st.text_input("City", st.session_state.get("city", "Mecca"))
+    country = st.text_input("Country", st.session_state.get("country", "Saudi Arabia"))
 
-        st.markdown("## 📅 Today's Prayer Times")
+    if st.button("Get Prayer Times", type="primary"):
+        today = datetime.now().strftime("%d-%m-%Y")
+        url = f"https://api.aladhan.com/v1/timingsByCity/{today}"
+        params = {"city": city, "country": country, "method": 2}
+        response = requests.get(url, params=params)
+        data = response.json()
 
-        for prayer in prayers:
-            st.markdown(
-                f"<div class='card'><h3>{prayer}</h3><p style='font-size:22px'>{timings[prayer]}</p></div>",
-                unsafe_allow_html=True
-            )
+        if data["code"] == 200:
+            timings = data["data"]["timings"]
+            prayers = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"]
 
-        # -------- NEXT PRAYER -------- #
-        now = datetime.now()
-        for prayer in prayers:
-            pt = datetime.strptime(timings[prayer], "%H:%M")
-            pt = pt.replace(year=now.year, month=now.month, day=now.day)
-            if pt > now:
-                remaining = pt - now
-                hours, remainder = divmod(remaining.seconds, 3600)
-                minutes, seconds = divmod(remainder, 60)
+            st.markdown("### 🕋 Today's Prayer Schedule")
 
+            for prayer in prayers:
                 st.markdown(
-                    f"<div class='card'><h3>⏳ Next Prayer: {prayer}</h3>"
-                    f"<p>{hours}h {minutes}m {seconds}s remaining</p></div>",
+                    f"<div class='prayer-card'><div>{prayer}</div>"
+                    f"<div class='big-number'>{timings[prayer]}</div></div>",
                     unsafe_allow_html=True
                 )
-                break
 
-# ---------------- QIBLA ---------------- #
-st.markdown("## 🧭 Qibla Direction")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-if st.button("Find Qibla"):
-    loc = requests.get("https://ipapi.co/json/").json()
-    lat = loc.get("latitude")
-    lon = loc.get("longitude")
+# ---------------- RIGHT SIDE (QIBLA + VERSE) ---------------- #
+with col2:
+    # Qibla Card
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("🧭 Qibla Direction")
 
-    if lat and lon:
-        kaaba_lat = math.radians(21.4225)
-        kaaba_lon = math.radians(39.8262)
-        lat = math.radians(lat)
-        lon = math.radians(lon)
+    if st.button("Find Qibla"):
+        loc = requests.get("https://ipapi.co/json/").json()
+        lat = loc.get("latitude")
+        lon = loc.get("longitude")
 
-        direction = math.atan2(
-            math.sin(kaaba_lon - lon),
-            math.cos(lat) * math.tan(kaaba_lat) - math.sin(lat) * math.cos(kaaba_lon - lon)
-        )
-        direction = (math.degrees(direction) + 360) % 360
+        if lat and lon:
+            kaaba_lat = math.radians(21.4225)
+            kaaba_lon = math.radians(39.8262)
+            lat = math.radians(lat)
+            lon = math.radians(lon)
 
-        st.success(f"Qibla Direction: {round(direction,2)}° from North")
+            direction = math.atan2(
+                math.sin(kaaba_lon - lon),
+                math.cos(lat) * math.tan(kaaba_lat) - math.sin(lat) * math.cos(kaaba_lon - lon)
+            )
+            direction = (math.degrees(direction) + 360) % 360
 
-# ---------------- AZAN ---------------- #
-st.markdown("## 🔔 Azan")
-st.audio("https://download.quranicaudio.com/quran/azan/azan1.mp3")
+            st.success(f"{round(direction,2)}° from North")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Quran Verse Card
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.subheader("📖 Daily Quran Verse")
+
+    try:
+        verse = requests.get("https://api.alquran.cloud/v1/ayah/random/en.asad").json()
+        text = verse["data"]["text"]
+        reference = f"{verse['data']['surah']['englishName']} {verse['data']['numberInSurah']}"
+        st.write(text)
+        st.caption(reference)
+    except:
+        st.write("Unable to load verse.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------- FOOTER ---------------- #
-st.markdown("<div class='footer'>© 2026 Islamic Prayer Companion | Premium Edition</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer'>© 2026 Noor Prayer | Designed as Real-Life Professional Islamic Application</div>", unsafe_allow_html=True)
